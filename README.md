@@ -55,4 +55,84 @@ graph TD
     B -->|6. Sends Processed Payload| A
     A -->|7. Renders Gradient Map| H
     A -->|8. Renders Hourly Graph| I
+```
 
+## 🌐 The Environmental Grid Concept
+
+SPIDER-NET operates as a pervasive "Environmental Grid." Rather than treating AQI data as isolated data points, the system interlinks geographic nodes, historical variance, and live atmospheric conditions to weave a comprehensive web of environmental intelligence. 
+
+### Core Grid Components
+
+* **Sensory Nodes:** The WAQI endpoints act as the physical sensory nodes of the grid, capturing raw atmospheric variables globally.
+* **Processing Matrix:** The FastAPI engine acts as the central processing matrix, filtering, routing, and normalizing the sensory data for consumption.
+* **Memory Fabric:** The local SQLite caching mechanism acts as the memory fabric, allowing the grid to remember past states and simulate continuity even when new nodes are integrated.
+* **Visual Interface:** The React dashboard provides a human-readable interface to the grid, translating complex data streams into actionable visual insights.
+
+### 🔄 SSE Alert Flow Sequence
+
+Our grid features a real-time event-driven architecture to alert users of critical atmospheric changes as they happen:
+
+```mermaid
+sequenceDiagram
+    participant User as React Client (Grid Interface)
+    participant FastAPI as Backend (Processing Matrix)
+    participant WAQI as External APIs (Sensory Nodes)
+    participant SSE as Alert Stream (SSE Channel)
+
+    User->>FastAPI: Subscribe to /api/alerts/stream
+    FastAPI-->>User: Establish persistent SSE connection (Heartbeat)
+    
+    loop Every environmental scan
+        User->>FastAPI: Query Node (e.g., Delhi)
+        FastAPI->>WAQI: Fetch Live Sensory Feed
+        WAQI-->>FastAPI: AQI, Temp, Geo Data
+        
+        alt AQI > 100 (Unhealthy Threshold)
+            FastAPI->>SSE: Broadcast Alert Payload
+            SSE-->>User: Trigger Grid Notification via Event Stream
+        end
+        
+        FastAPI-->>User: Return Processed Location Data
+    end
+```
+
+### 🧩 Component Block Matrix
+
+The architectural layout of the SPIDER-NET grid ecosystem:
+
+```mermaid
+flowchart TB
+    classDef frontend fill:#00f0ff,stroke:#333,stroke-width:2px,color:#000;
+    classDef backend fill:#ff003c,stroke:#333,stroke-width:2px,color:#fff;
+    classDef data fill:#f0b90b,stroke:#333,stroke-width:2px,color:#000;
+
+    subgraph User_Interface [Frontend: React Grid Terminal]
+        UI_Dash[Dashboard Engine]:::frontend
+        UI_Map[Leaflet Geo-Renderer]:::frontend
+        UI_Graph[Recharts Data Visualizer]:::frontend
+        UI_Alert[SSE Alert Manager]:::frontend
+    end
+
+    subgraph Core_Matrix [Backend: FastAPI Processor]
+        API_Route[Main Router]:::backend
+        API_SSE[SSE Event Streamer]:::backend
+        API_Logic[Decision Engine & Backfill]:::backend
+    end
+
+    subgraph Data_Layer [Information Repositories]
+        DB_Local[(SQLite Memory Fabric)]:::data
+        API_External([WAQI Sensory Network]):::data
+    end
+
+    %% Connections
+    UI_Dash <-->|HTTP REST| API_Route
+    UI_Alert <..>|Persistent SSE| API_SSE
+    
+    API_Route --> API_Logic
+    API_Logic <--> DB_Local
+    API_Logic <--> API_External
+    API_Route --> API_SSE
+    
+    UI_Dash --> UI_Map
+    UI_Dash --> UI_Graph
+```
